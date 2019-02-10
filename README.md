@@ -1,2 +1,3 @@
 # react-course-hy-backend
-Osa 3 tehtävät
+
+[Linkki heroku sovellukseen](https://polar-sierra-37503.herokuapp.com/)
