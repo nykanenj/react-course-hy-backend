@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
 
+app.use(express.static('build'))
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -33,11 +34,11 @@ let persons = [
   }
 ];
 
-app.get('/', (request, response) => {
+app.get('api/', (request, response) => {
   response.send('<h1>Persons API</h1>');
 });
 
-app.get('/info', (request, response) => {
+app.get('api/info', (request, response) => {
   response.send(
     `<div>Puhelinluettelossa ${persons.length} henkilön tiedot</div>
     <br />
