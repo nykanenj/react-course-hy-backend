@@ -73,15 +73,17 @@ app.post('/api/persons', (request, response) => {
   });
 
   person.save().then(createdPerson => {
-    console.log('created Person!!!!!', createdPerson)
     response.json(createdPerson.toJSON());
   });
   
 });
 
-app.delete('/api/persons/:id', (request, response) => {
-  //persons = persons.filter(person => person.id !== Number(request.params.id));
-  //response.status(204).end();
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+  .then(result => {
+    response.status(204).end()
+  })
+  .catch(error => next(error));
 });
 
 const PORT = process.env.PORT;
