@@ -23,8 +23,7 @@ personSchema.set('toJSON', {
     delete returnObject._id;
     delete returnObject.__v;
   }
-
-})
+});
 
 const Person = mongoose.model('Person', personSchema);
 
@@ -69,7 +68,9 @@ app.get('api/info', (request, response) => {
 app.get('/api/persons', (request, response) => {
   mongoose.connect(url, {useNewUrlParser: true});
   Person.find({})
-  .then(result => response.json(result.map(person => person.toJSON())))
+  .then(result => {
+    response.json(result.map(person => person.toJSON()))
+  })
   .then(() => mongoose.connection.close());
 });
 
