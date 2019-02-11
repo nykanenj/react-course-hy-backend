@@ -17,6 +17,15 @@ const personSchema = new mongoose.Schema({
   number: String
 });
 
+personSchema.set('toJSON', { 
+  transform: (document, returnObject) => {
+    returnObject.id = returnObject._id.toString();
+    delete returnObject._id;
+    delete returnObject.__v;
+  }
+
+})
+
 const Person = mongoose.model('Person', personSchema);
 
 morgan.token('reqBody', function requestBody (req) {
@@ -60,11 +69,7 @@ app.get('api/info', (request, response) => {
 app.get('/api/persons', (request, response) => {
   mongoose.connect(url, {useNewUrlParser: true});
   Person.find({})
-  .then(result => {
-    result.forEach(person => {
-      console.log(person)
-    })
-  })
+  .then(result => response.json(result.map(person => person.toJSON())))
   .then(() => mongoose.connection.close());
 });
 
