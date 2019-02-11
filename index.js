@@ -3,10 +3,21 @@ const app = express();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
+const mongoose = require('mongoose');
 
 app.use(express.static('build'))
 app.use(cors());
 app.use(bodyParser.json());
+
+const url =  
+`mongodb+srv://puhelinluettelo_mongo_user:${password}@cluster0-zo7xf.mongodb.net/numerotDB?retryWrites=true`;
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String
+});
+
+const Person = mongoose.model('Person', personSchema);
 
 morgan.token('reqBody', function requestBody (req) {
   if(req.method === 'POST' && req.headers["content-type"] === 'application/json') {
@@ -47,7 +58,14 @@ app.get('api/info', (request, response) => {
 });
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons);
+  mongoose.connect(url, {useNewUrlParser: true});
+  Person.find({})
+  .then(result => {
+    result.forEach(person => {
+      console.log(person)
+    })
+  })
+  .then(() => mongoose.connection.close());
 });
 
 app.get('/api/persons/:id', (request, response) => {
