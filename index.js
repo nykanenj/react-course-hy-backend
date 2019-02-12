@@ -8,8 +8,9 @@ const mongoose = require('mongoose');
 const Person = require('./models/person');
 
 app.use(express.static('build'));
-app.use(cors());
 app.use(bodyParser.json());
+app.use(cors());
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :reqBody'));
 
 morgan.token('reqBody', function requestBody (req) {
   if(req.method === 'POST' && req.headers["content-type"] === 'application/json') {
@@ -17,9 +18,6 @@ morgan.token('reqBody', function requestBody (req) {
   }
   return null;
 });
-
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :reqBody'));
-
 
 app.get('api/', (request, response) => {
   response.send('<h1>Persons API</h1>');
@@ -38,13 +36,16 @@ app.get('/api/persons', (request, response) => {
   .then(result => {
     response.json(result.map(person => person.toJSON()));
   })
-  .then(() => mongoose.connection.close());
+  .then(() => mongoose.connection.close())
+  .catch(error => next(error));
 });
 
 app.get('/api/persons/:id', (request, response) => {
-  Person.findById(request.params.id).then(person => {
+  Person.findById(request.params.id)
+  .then(person => {
     response.json(person.toJSON())
-  });
+  })
+  .catch(error => next(error));
 });
 
 app.post('/api/persons', (request, response) => {
@@ -58,15 +59,6 @@ app.post('/api/persons', (request, response) => {
     return response.status(400).json({ error: 'Number missing' });
   }
 
-  /*
-  const exists = persons.find(element => element.name === person.name);
-
-  if (exists) {
-    return response.status(409).json({ 
-      error:  `Entry already exists for ${person.name}` });
-  }
-  */
-
  const person = new Person({
   name: body.name,
   number: body.number,
@@ -74,14 +66,30 @@ app.post('/api/persons', (request, response) => {
 
   person.save().then(createdPerson => {
     response.json(createdPerson.toJSON());
-  });
+  })
+  .catch(error => next(error));
   
 });
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Note.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedPerson => {
+      response.json(updatedPerson.toJSON())
+    })
+    .catch(error => next(error));
+})
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
   .then(result => {
-    response.status(204).end()
+    response.status(204).end();
   })
   .catch(error => next(error));
 });
@@ -90,3 +98,23 @@ const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' });
+}
+
+app.use(unknownEndpoint);
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+    return response.status(400).send({ error: 'malformatted id' });
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+
+  next(error);
+}
+
+app.use(errorHandler);
