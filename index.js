@@ -36,7 +36,6 @@ app.get('/api/persons', (request, response, next) => {
   .then(result => {
     response.json(result.map(person => person.toJSON()));
   })
-  .then(() => mongoose.connection.close())
   .catch(error => next(error));
 });
 
