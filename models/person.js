@@ -6,11 +6,11 @@ const url = process.env.MONGODB_URI;
 console.log('Connecting to: ', url);
 
 mongoose.connect(url, { useNewUrlParser: true })
-  .then(result => {
-    console.log('connected to MongoDB')
+  .then(() => {
+    console.log('connected to MongoDB');
   })
   .catch((error) => {
-    console.log('error connection to MongoDB:', error.message)
+    console.log('error connection to MongoDB:', error.message);
   });
 
 const personSchema = new mongoose.Schema({
@@ -18,21 +18,21 @@ const personSchema = new mongoose.Schema({
     type: String,
     minlength: 3,
     required: true,
-    unique: true
+    unique: true,
   },
   number: {
     type: String,
     minlength: 8,
-    required: true
+    required: true,
   },
 });
-  
-personSchema.set('toJSON', { 
+
+personSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-      returnedObject.id = returnedObject._id.toString();
-      delete returnedObject._id;
-      delete returnedObject.__v;
-  }
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
 });
 
 personSchema.plugin(uniqueValidator);

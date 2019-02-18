@@ -29,5 +29,7 @@ module.exports = {
 	"no-console": 0,
 	"prefer-destructuring": 0,
 	"consistent-return": 0,
+	"no-underscore-dangle": 0,
+	"no-param-reassign": 0,
     }
 };
